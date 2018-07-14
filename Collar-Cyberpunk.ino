@@ -1,15 +1,42 @@
 #include<FastLED.h>
 
+// Serial Baud rate
+#define SERIAL_BAUD 115200
+
+/**
+*  Debug stuff
+*/
+#define DEBUG       1
+
+// Length of various buffer
+#define BUFFLEN_MSG 300
+
+// Serial out Buffer
+char msg_buffer[BUFFLEN_MSG];
+
+#define SERIAL_OBJ Serial
+
+// snprintf to output buffer
+#define SNPRINTF_MSG(...) \
+snprintf(msg_buffer, BUFFLEN_MSG, __VA_ARGS__);
+
+// snprintf to output buffer then println to serial
+#define SER_SNPRINTF_MSG(...)  \
+SNPRINTF_MSG(__VA_ARGS__); \
+SERIAL_OBJ.println(msg_buffer);
+
+/**
+* LED stuff
+*/
+
 #define LED_PIN     12
 #define BRIGHTNESS  20
 #define LED_TYPE    WS2812
 #define COLOR_ORDER GRB
-#define DEBUG       1
 
 const uint8_t kMatrixWidth  = 28;
 const uint8_t kMatrixHeight = 4;
 const bool    kMatrixSerpentineLayout = true;
-
 
 // Generates a rhombus stripe pattern that transitions between colors in a 16 color palette.
 // stripe is symmetrical pattern like this
@@ -56,9 +83,17 @@ float speed = 1.0;
 CRGBPalette16 currentPalette( PartyColors_p );
 
 void setup() {
-  delay(3000);
-  LEDS.addLeds<LED_TYPE,LED_PIN,COLOR_ORDER>(leds,NUM_LEDS);
-  LEDS.setBrightness(BRIGHTNESS);
+    // initialize serial
+    SERIAL_OBJ.begin(SERIAL_BAUD);
+
+    #if DEBUG
+        SER_SNPRINTF_MSG("SETUP");
+    #endif
+
+    delay(3000);
+
+    LEDS.addLeds<LED_TYPE,LED_PIN,COLOR_ORDER>(leds,NUM_LEDS);
+    LEDS.setBrightness(BRIGHTNESS);
 }
 
 uint8_t colorFunction(float theta) {
@@ -79,37 +114,41 @@ float mirrored( int x ){
 
 void mapRhombiiToLEDsUsingPalette()
 {
-  for(int y = 0; y < kMatrixWidth; y++) {
-    for(int x = 0; x < kMatrixHeight; x++) {
-      // (x,y) is coordinate of point
-      // theta is angle within color function which repeats (like a sine wave) from 0 to 1
-      // real_x is the position in the colour axis
+    for(int y = 0; y < kMatrixWidth; y++) {
+        for(int x = 0; x < kMatrixHeight; x++) {
+            // (x,y) is coordinate of point
+            // theta is angle within color function which repeats (like a sine wave) from 0 to 1
+            // real_x is the position in the colour axis
 
 
-      float real_x = (float)(mirrored(x) - (float)(line_lag * (float)(y)));
-      real_x += speed * (float)(millis()) * 1000.0;
-      float theta = fmod(real_x, wavelength);
+            float real_x = (float)(mirrored(x) - (float)(line_lag * (float)(y)));
+            real_x += speed * (float)(millis()) * 1000.0;
+            float theta = fmod(real_x, wavelength);
 
-      // TODO: calculate theta from x , y , speed
+            // TODO: calculate theta from x , y , speed
 
-      uint8_t index = colorFunction(theta);
+            uint8_t index = colorFunction(theta);
 
-      CRGB color = ColorFromPalette( currentPalette, index, 255);
-      leds[XY(x,y)] = color;
+            CRGB color = ColorFromPalette( currentPalette, index, 255);
+            leds[XY(x,y)] = color;
+        }
     }
-  }
 }
 
 void loop() {
-  // Periodically choose a new palette, speed, and scale
-  changePaletteAndSettingsPeriodically();
+    #if DEBUG
+        SER_SNPRINTF_MSG("LOOP");
+        SER_SNPRINTF_MSG("time is %f", (float)(millis() / 1000.0));
+    #endif
+    // Periodically choose a new palette, speed, and scale
+    changePaletteAndSettingsPeriodically();
 
-  // convert the noise data to colors in the LED array
-  // using the current palette
-  mapRhombiiToLEDsUsingPalette();
+    // convert the noise data to colors in the LED array
+    // using the current palette
+    mapRhombiiToLEDsUsingPalette();
 
-  LEDS.show();
-  // delay(10);
+    LEDS.show();
+    // delay(10);
 }
 
 
@@ -129,7 +168,7 @@ void loop() {
 
 void changePaletteAndSettingsPeriodically()
 {
-  if(1) { SetupOrangeAndDarkRedPalette();           speed = 1.0; wavelength =   5; pulse_width = 0.1; }
+    if(1) { SetupOrangeAndDarkRedPalette();           speed = 1.0; wavelength =   5; pulse_width = 0.1; }
 }
 
 // This function generates a random palette that's a gradient
@@ -139,69 +178,69 @@ void changePaletteAndSettingsPeriodically()
 // which is more interesting than just a gradient of different hues.
 void SetupRandomPalette()
 {
-  currentPalette = CRGBPalette16(
-                      CHSV( random8(), 255, 32),
-                      CHSV( random8(), 255, 255),
-                      CHSV( random8(), 128, 255),
-                      CHSV( random8(), 255, 255));
-}
-
-// This function sets up a palette of black and white stripes,
-// using code.  Since the palette is effectively an array of
-// sixteen CRGB colors, the various fill_* functions can be used
-// to set them up.
-void SetupBlackAndWhiteStripedPalette()
-{
-  // 'black out' all 16 palette entries...
-  fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Black);
-  // and set every fourth one to white.
-  currentPalette[0] = CRGB::White;
-  currentPalette[4] = CRGB::White;
-  currentPalette[8] = CRGB::White;
-  currentPalette[12] = CRGB::White;
-
-}
-
-// This function sets up a palette of purple and green stripes.
-void SetupPurpleAndGreenPalette()
-{
-  CRGB purple = CHSV( HUE_PURPLE, 255, 255);
-  CRGB green  = CHSV( HUE_GREEN, 255, 255);
-  CRGB black  = CRGB::Black;
-
-  currentPalette = CRGBPalette16(
-    green,  green,  black,  black,
-    purple, purple, black,  black,
-    green,  green,  black,  black,
-    purple, purple, black,  black );
-}
-
-void SetupOrangeAndDarkRedPalette()
-{
-    fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Orange);
-    CRGB dark_red = CHSV( HUE_RED, 255, 10);
-    currentPalette[0] = dark_red;
-}
-
-
-//
-// Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
-//
-uint16_t XY( uint8_t x, uint8_t y)
-{
-  uint16_t i;
-  if( kMatrixSerpentineLayout == false) {
-    i = (y * kMatrixWidth) + x;
-  }
-  if( kMatrixSerpentineLayout == true) {
-    if( y & 0x01) {
-      // Odd rows run backwards
-      uint8_t reverseX = (kMatrixWidth - 1) - x;
-      i = (y * kMatrixWidth) + reverseX;
-    } else {
-      // Even rows run forwards
-      i = (y * kMatrixWidth) + x;
+    currentPalette = CRGBPalette16(
+        CHSV( random8(), 255, 32),
+        CHSV( random8(), 255, 255),
+        CHSV( random8(), 128, 255),
+        CHSV( random8(), 255, 255));
     }
-  }
-  return i;
-}
+
+    // This function sets up a palette of black and white stripes,
+    // using code.  Since the palette is effectively an array of
+    // sixteen CRGB colors, the various fill_* functions can be used
+    // to set them up.
+    void SetupBlackAndWhiteStripedPalette()
+    {
+        // 'black out' all 16 palette entries...
+        fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Black);
+        // and set every fourth one to white.
+        currentPalette[0] = CRGB::White;
+        currentPalette[4] = CRGB::White;
+        currentPalette[8] = CRGB::White;
+        currentPalette[12] = CRGB::White;
+
+    }
+
+    // This function sets up a palette of purple and green stripes.
+    void SetupPurpleAndGreenPalette()
+    {
+        CRGB purple = CHSV( HUE_PURPLE, 255, 255);
+        CRGB green  = CHSV( HUE_GREEN, 255, 255);
+        CRGB black  = CRGB::Black;
+
+        currentPalette = CRGBPalette16(
+            green,  green,  black,  black,
+            purple, purple, black,  black,
+            green,  green,  black,  black,
+            purple, purple, black,  black );
+        }
+
+        void SetupOrangeAndDarkRedPalette()
+        {
+            fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Orange);
+            CRGB dark_red = CHSV( HUE_RED, 255, 10);
+            currentPalette[0] = dark_red;
+        }
+
+
+        //
+        // Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
+        //
+        uint16_t XY( uint8_t x, uint8_t y)
+        {
+            uint16_t i;
+            if( kMatrixSerpentineLayout == false) {
+                i = (y * kMatrixWidth) + x;
+            }
+            if( kMatrixSerpentineLayout == true) {
+                if( y & 0x01) {
+                    // Odd rows run backwards
+                    uint8_t reverseX = (kMatrixWidth - 1) - x;
+                    i = (y * kMatrixWidth) + reverseX;
+                } else {
+                    // Even rows run forwards
+                    i = (y * kMatrixWidth) + x;
+                }
+            }
+            return i;
+        }
