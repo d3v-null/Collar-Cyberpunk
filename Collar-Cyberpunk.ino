@@ -158,7 +158,8 @@ void mapRhombiiToLEDsUsingPalette()
             CRGB color = ColorFromPalette( currentPalette, index, 255);
             uint8_t led_number = XY(x,y);
             #if DEBUG
-            SER_SNPRINTF_MSG("theta %f, index %d", theta, index);
+            SER_SNPRINTF_MSG("real_x %5f, wavelength %d", real_x, wavelength);
+            SER_SNPRINTF_MSG("theta %5f, index %d", theta, index);
             SER_SNPRINTF_MSG("(x, y) = (%d, %d) led_number %d", x, y, led_number);
             #endif
 
