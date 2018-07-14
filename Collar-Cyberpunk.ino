@@ -87,7 +87,7 @@ void setup() {
     SERIAL_OBJ.begin(SERIAL_BAUD);
 
     #if DEBUG
-        SER_SNPRINTF_MSG("SETUP");
+    SER_SNPRINTF_MSG("SETUP");
     #endif
 
     delay(3000);
@@ -137,8 +137,8 @@ void mapRhombiiToLEDsUsingPalette()
 
 void loop() {
     #if DEBUG
-        SER_SNPRINTF_MSG("LOOP");
-        SER_SNPRINTF_MSG("time is %f", (float)(millis() / 1000.0));
+    SER_SNPRINTF_MSG("LOOP");
+    SER_SNPRINTF_MSG("time is %d", (millis() / 1000.0));
     #endif
     // Periodically choose a new palette, speed, and scale
     changePaletteAndSettingsPeriodically();
@@ -171,76 +171,32 @@ void changePaletteAndSettingsPeriodically()
     if(1) { SetupOrangeAndDarkRedPalette();           speed = 1.0; wavelength =   5; pulse_width = 0.1; }
 }
 
-// This function generates a random palette that's a gradient
-// between four different colors.  The first is a dim hue, the second is
-// a bright hue, the third is a bright pastel, and the last is
-// another bright hue.  This gives some visual bright/dark variation
-// which is more interesting than just a gradient of different hues.
-void SetupRandomPalette()
+void SetupOrangeAndDarkRedPalette()
 {
-    currentPalette = CRGBPalette16(
-        CHSV( random8(), 255, 32),
-        CHSV( random8(), 255, 255),
-        CHSV( random8(), 128, 255),
-        CHSV( random8(), 255, 255));
+    fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Orange);
+    CRGB dark_red = CHSV( HUE_RED, 255, 10);
+    currentPalette[0] = dark_red;
+}
+
+
+//
+// Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
+//
+uint16_t XY( uint8_t x, uint8_t y)
+{
+    uint16_t i;
+    if( kMatrixSerpentineLayout == false) {
+        i = (y * kMatrixWidth) + x;
     }
-
-    // This function sets up a palette of black and white stripes,
-    // using code.  Since the palette is effectively an array of
-    // sixteen CRGB colors, the various fill_* functions can be used
-    // to set them up.
-    void SetupBlackAndWhiteStripedPalette()
-    {
-        // 'black out' all 16 palette entries...
-        fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Black);
-        // and set every fourth one to white.
-        currentPalette[0] = CRGB::White;
-        currentPalette[4] = CRGB::White;
-        currentPalette[8] = CRGB::White;
-        currentPalette[12] = CRGB::White;
-
+    if( kMatrixSerpentineLayout == true) {
+        if( y & 0x01) {
+            // Odd rows run backwards
+            uint8_t reverseX = (kMatrixWidth - 1) - x;
+            i = (y * kMatrixWidth) + reverseX;
+        } else {
+            // Even rows run forwards
+            i = (y * kMatrixWidth) + x;
+        }
     }
-
-    // This function sets up a palette of purple and green stripes.
-    void SetupPurpleAndGreenPalette()
-    {
-        CRGB purple = CHSV( HUE_PURPLE, 255, 255);
-        CRGB green  = CHSV( HUE_GREEN, 255, 255);
-        CRGB black  = CRGB::Black;
-
-        currentPalette = CRGBPalette16(
-            green,  green,  black,  black,
-            purple, purple, black,  black,
-            green,  green,  black,  black,
-            purple, purple, black,  black );
-        }
-
-        void SetupOrangeAndDarkRedPalette()
-        {
-            fill_solid( currentPalette, PALETTE_LENGTH, CRGB::Orange);
-            CRGB dark_red = CHSV( HUE_RED, 255, 10);
-            currentPalette[0] = dark_red;
-        }
-
-
-        //
-        // Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
-        //
-        uint16_t XY( uint8_t x, uint8_t y)
-        {
-            uint16_t i;
-            if( kMatrixSerpentineLayout == false) {
-                i = (y * kMatrixWidth) + x;
-            }
-            if( kMatrixSerpentineLayout == true) {
-                if( y & 0x01) {
-                    // Odd rows run backwards
-                    uint8_t reverseX = (kMatrixWidth - 1) - x;
-                    i = (y * kMatrixWidth) + reverseX;
-                } else {
-                    // Even rows run forwards
-                    i = (y * kMatrixWidth) + x;
-                }
-            }
-            return i;
-        }
+    return i;
+}
