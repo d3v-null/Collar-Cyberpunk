@@ -82,9 +82,17 @@ float speed = 1.0;
 
 CRGBPalette16 currentPalette( PartyColors_p );
 
+time_t start_time;
+
+time_t delta(){
+    return now() - start_time
+}
+
 void setup() {
     // initialize serial
     SERIAL_OBJ.begin(SERIAL_BAUD);
+
+    start_time = now();
 
     #if DEBUG
     SER_SNPRINTF_MSG("SETUP");
@@ -144,15 +152,15 @@ void mapRhombiiToLEDsUsingPalette()
 
 
             float real_x = (float)(mirrored(x) - (float)(line_lag * (float)(y)));
-            real_x += speed * (float)(millis()) * 1000.0;
+            real_x += speed * (float)(delta()) / 1000.0;
             float theta = fmod(real_x, wavelength);
 
             // TODO: calculate theta from x , y , speed
 
-            uint8_t index = colorFunction(theta);
+            uint16_t index = colorFunction(theta);
 
             CRGB color = ColorFromPalette( currentPalette, index, 255);
-            led_number = XY(x,y);
+            uint8_t led_number = XY(x,y);
             #if DEBUG
             SER_SNPRINTF_MSG("led_number %d", led_number);
             #endif
@@ -190,7 +198,7 @@ void SetupOrangeAndDarkRedPalette()
 void loop() {
     #if DEBUG
     SER_SNPRINTF_MSG("LOOP");
-    SER_SNPRINTF_MSG("time is %d", (millis() / 1000.0));
+    SER_SNPRINTF_MSG("time is %d", (delta() / 1000.0));
     #endif
     // Periodically choose a new palette, speed, and scale
     changePaletteAndSettingsPeriodically();
