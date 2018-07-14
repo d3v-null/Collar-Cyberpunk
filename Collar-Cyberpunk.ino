@@ -71,7 +71,7 @@ float pulse_width = 0.5;
 float pw_rise = 0.0;
 float pw_fall = 0.0;
 float line_lag = 1.0;
-float wavelength = 5;
+float wavelength = 10;
 
 #define NUM_LEDS (kMatrixWidth * kMatrixHeight)
 #define MAX_DIMENSION ((kMatrixWidth>kMatrixHeight) ? kMatrixWidth : kMatrixHeight)
