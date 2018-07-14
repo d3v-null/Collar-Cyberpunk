@@ -111,6 +111,12 @@ void setup() {
 uint8_t colorFunction(float theta) {
     // Generates a palette index from an angle theta
     // TODO: calculate theta colour from theta, PALETTE_LENGTH
+
+    #if DEBUG
+    SER_SNPRINTF_MSG("th %s", DTOSTRF(theta));
+    SER_SNPRINTF_MSG("pw %s", DTOSTRF(pulse_width));
+    #endif
+
     if( 0 <= theta && theta < pulse_width ) {
         return PALETTE_LENGTH - 1;
     } else {
@@ -190,7 +196,7 @@ void mapRhombiiToLEDsUsingPalette()
 
 void changePaletteAndSettingsPeriodically()
 {
-    if(1) { SetupOrangeAndDarkRedPalette();           speed = 1.0; wavelength =   5; pulse_width = 0.1; }
+    if(1) { SetupOrangeAndDarkRedPalette();           speed = 1.0; wavelength =   5; pulse_width = 0.5; }
 }
 
 void SetupOrangeAndDarkRedPalette()
