@@ -47,7 +47,7 @@ const bool    kMatrixSerpentineLayout = true;
 // ^  --+++++----|----+++++--
 // |  ---+++++---|---+++++---
 //    ----+++++--|--+++++----
-// +                      -> x
+// +                      -> x (width)
 //            <-   ->         Rhombus move direction
 // Angle of rhombus determined by line_lag, how much x lags as you move in y.
 //
@@ -144,24 +144,21 @@ uint16_t XY( uint8_t x, uint8_t y)
 
 void mapRhombiiToLEDsUsingPalette()
 {
-    for(int y = 0; y < kMatrixWidth; y++) {
-        for(int x = 0; x < kMatrixHeight; x++) {
+    for(int y = 0; y < kMatrixHeight; y++) {
+        for(int x = 0; x < kMatrixWidth; x++) {
             // (x,y) is coordinate of point
             // theta is angle within color function which repeats (like a sine wave) from 0 to 1
             // real_x is the position in the colour axis
-
-
             float real_x = (float)(mirrored(x) - (float)(line_lag * (float)(y)));
             real_x += speed * (float)(delta()) / 1000.0;
             float theta = fmod(real_x, wavelength);
-
-            // TODO: calculate theta from x , y , speed
 
             uint16_t index = colorFunction(theta);
 
             CRGB color = ColorFromPalette( currentPalette, index, 255);
             uint8_t led_number = XY(x,y);
             #if DEBUG
+            SER_SNPRINTF_MSG("theta %f, index %d", theta, index`);
             SER_SNPRINTF_MSG("(x, y) = (%d, %d) led_number %d", x, y, led_number);
             #endif
 
