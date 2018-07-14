@@ -163,7 +163,7 @@ void mapRhombiiToLEDsUsingPalette()
             uint8_t led_number = XY(x,y);
             #if DEBUG
             SER_SNPRINTF_MSG("real_x %s,", DTOSTRF(real_x));
-            SER_SNPRINTF_MSG("wavelength %s" DTOSTRF(wavelength));
+            SER_SNPRINTF_MSG("wavelength %s", DTOSTRF(wavelength));
             SER_SNPRINTF_MSG("theta %s, index %d", DTOSTRF(theta), index);
             SER_SNPRINTF_MSG("(x, y) = (%d, %d) led_number %d", x, y, led_number);
             #endif
