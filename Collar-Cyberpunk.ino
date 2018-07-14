@@ -112,6 +112,28 @@ float mirrored( int x ){
     return abs( float(x) - (float(kMatrixWidth) / 2.0));
 }
 
+//
+// Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
+//
+uint16_t XY( uint8_t x, uint8_t y)
+{
+    uint16_t i;
+    if( kMatrixSerpentineLayout == false) {
+        i = (y * kMatrixWidth) + x;
+    }
+    if( kMatrixSerpentineLayout == true) {
+        if( y & 0x01) {
+            // Odd rows run backwards
+            uint8_t reverseX = (kMatrixWidth - 1) - x;
+            i = (y * kMatrixWidth) + reverseX;
+        } else {
+            // Even rows run forwards
+            i = (y * kMatrixWidth) + x;
+        }
+    }
+    return i;
+}
+
 void mapRhombiiToLEDsUsingPalette()
 {
     for(int y = 0; y < kMatrixWidth; y++) {
@@ -130,28 +152,15 @@ void mapRhombiiToLEDsUsingPalette()
             uint8_t index = colorFunction(theta);
 
             CRGB color = ColorFromPalette( currentPalette, index, 255);
-            leds[XY(x,y)] = color;
+            led_number = XY(x,y);
+            #if DEBUG
+            SER_SNPRINTF_MSG("led_number %d", led_number);
+            #endif
+
+            leds[led_number] = color;
         }
     }
 }
-
-void loop() {
-    #if DEBUG
-    SER_SNPRINTF_MSG("LOOP");
-    SER_SNPRINTF_MSG("time is %d", (millis() / 1000.0));
-    #endif
-    // Periodically choose a new palette, speed, and scale
-    changePaletteAndSettingsPeriodically();
-
-    // convert the noise data to colors in the LED array
-    // using the current palette
-    mapRhombiiToLEDsUsingPalette();
-
-    LEDS.show();
-    // delay(10);
-}
-
-
 
 // There are several different palettes of colors demonstrated here.
 //
@@ -178,25 +187,18 @@ void SetupOrangeAndDarkRedPalette()
     currentPalette[0] = dark_red;
 }
 
+void loop() {
+    #if DEBUG
+    SER_SNPRINTF_MSG("LOOP");
+    SER_SNPRINTF_MSG("time is %d", (millis() / 1000.0));
+    #endif
+    // Periodically choose a new palette, speed, and scale
+    changePaletteAndSettingsPeriodically();
 
-//
-// Mark's xy coordinate mapping code.  See the XYMatrix for more information on it.
-//
-uint16_t XY( uint8_t x, uint8_t y)
-{
-    uint16_t i;
-    if( kMatrixSerpentineLayout == false) {
-        i = (y * kMatrixWidth) + x;
-    }
-    if( kMatrixSerpentineLayout == true) {
-        if( y & 0x01) {
-            // Odd rows run backwards
-            uint8_t reverseX = (kMatrixWidth - 1) - x;
-            i = (y * kMatrixWidth) + reverseX;
-        } else {
-            // Even rows run forwards
-            i = (y * kMatrixWidth) + x;
-        }
-    }
-    return i;
+    // convert the noise data to colors in the LED array
+    // using the current palette
+    mapRhombiiToLEDsUsingPalette();
+
+    LEDS.show();
+    // delay(10);
 }
