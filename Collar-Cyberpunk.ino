@@ -153,7 +153,8 @@ void mapRhombiiToLEDsUsingPalette()
             // (x,y) is coordinate of point
             // theta is angle within color function which repeats (like a sine wave) from 0 to 1
             // real_x is the position in the colour axis
-            float real_x = (float)(mirrored(x) - (float)(line_lag * (float)(y)));
+            float mirrored_x = mirrored(x);
+            float real_x = (float)(mirrored_x - (float)(line_lag * (float)(y)));
             real_x += speed * (float)(delta()) / 1000.0;
             float theta = fmod(real_x, wavelength);
 
@@ -162,6 +163,7 @@ void mapRhombiiToLEDsUsingPalette()
             CRGB color = ColorFromPalette( currentPalette, index, 255);
             uint8_t led_number = XY(x,y);
             #if DEBUG
+            SER_SNPRINTF_MSG("mirrored_x %s,", DTOSTRF(mirrored_x));
             SER_SNPRINTF_MSG("real_x %s,", DTOSTRF(real_x));
             SER_SNPRINTF_MSG("wavelength %s", DTOSTRF(wavelength));
             SER_SNPRINTF_MSG("theta %s, index %d", DTOSTRF(theta), index);
