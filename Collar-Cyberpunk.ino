@@ -14,6 +14,8 @@
 // Serial out Buffer
 char msg_buffer[BUFFLEN_MSG];
 
+char float_buffer[100];
+
 #define SERIAL_OBJ Serial
 
 // snprintf to output buffer
@@ -24,6 +26,8 @@ snprintf(msg_buffer, BUFFLEN_MSG, __VA_ARGS__);
 #define SER_SNPRINTF_MSG(...)  \
 SNPRINTF_MSG(__VA_ARGS__); \
 SERIAL_OBJ.println(msg_buffer);
+
+#define DTOSTRF(x) dtostrf(x, 7, 3, float_buffer)
 
 /**
 * LED stuff
@@ -158,8 +162,8 @@ void mapRhombiiToLEDsUsingPalette()
             CRGB color = ColorFromPalette( currentPalette, index, 255);
             uint8_t led_number = XY(x,y);
             #if DEBUG
-            SER_SNPRINTF_MSG("real_x %s, wavelength %s", dtostrf(real_x), dtostrf(wavelength));
-            SER_SNPRINTF_MSG("theta %s, index %d", dtostrf(theta), index);
+            SER_SNPRINTF_MSG("real_x %s, wavelength %s", DTOSTRF(real_x), DTOSTRF(wavelength));
+            SER_SNPRINTF_MSG("theta %s, index %d", DTOSTRF(theta), index);
             SER_SNPRINTF_MSG("(x, y) = (%d, %d) led_number %d", x, y, led_number);
             #endif
 
