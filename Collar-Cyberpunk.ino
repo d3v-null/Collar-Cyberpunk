@@ -82,17 +82,17 @@ float speed = 1.0;
 
 CRGBPalette16 currentPalette( PartyColors_p );
 
-time_t start_time;
+uint16_t start_time;
 
-time_t delta(){
-    return now() - start_time
+uint16_t delta(){
+    return millis() - start_time;
 }
 
 void setup() {
     // initialize serial
     SERIAL_OBJ.begin(SERIAL_BAUD);
 
-    start_time = now();
+    start_time = millis();
 
     #if DEBUG
     SER_SNPRINTF_MSG("SETUP");
