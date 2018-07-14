@@ -156,7 +156,7 @@ void mapRhombiiToLEDsUsingPalette()
             float mirrored_x = mirrored(x);
             float real_x = (float)(mirrored_x - (float)(line_lag * (float)(y)));
             real_x += speed * (float)(delta()) / 1000.0;
-            float theta = fmod(real_x, wavelength);
+            float theta = fmod(real_x, wavelength) / wavelength;
 
             uint16_t index = colorFunction(theta);
 
