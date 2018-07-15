@@ -212,7 +212,7 @@ void loop() {
     SER_SNPRINTF_MSG("time is %d", (delta() / 1000.0));
     #endif
     // Periodically choose a new palette, speed, and scale
-    changePaletteAndSettingsPeriodically();
+    // changePaletteAndSettingsPeriodically();
 
     // convert the noise data to colors in the LED array
     // using the current palette
